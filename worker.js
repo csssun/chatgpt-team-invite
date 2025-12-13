@@ -15,7 +15,13 @@ export default {
 
     // 静态页面
     if (url.pathname === '/' || url.pathname === '/index.html') {
-      return fetch('https://raw.githubusercontent.com/keenturbo/chatgpt-team-invite/main/index.html');
+      const htmlResponse = await fetch('https://raw.githubusercontent.com/keenturbo/chatgpt-team-invite/main/index.html');
+      const html = await htmlResponse.text();
+      return new Response(html, {
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+        },
+      });
     }
 
     // 邀请 API

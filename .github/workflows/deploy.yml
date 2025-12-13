@@ -24,3 +24,9 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          secrets: |
+            CHATGPT_TOKEN
+            CHATGPT_ACCOUNT_ID
+        env:
+          CHATGPT_TOKEN: ${{ secrets.CHATGPT_TOKEN }}
+          CHATGPT_ACCOUNT_ID: ${{ secrets.CHATGPT_ACCOUNT_ID }}

@@ -12,13 +12,11 @@
 
 ### 1. 获取认证信息
 
-登录 ChatGPT Team 管理后台：
-
 ```
-https://chatgpt.com/admin/members
+https://chatgpt.com/api/auth/session
 ```
 
-打开浏览器开发者工具 (F12) → Network 面板 → 随便触发一个请求，找到以下两个值：
+找到"planType": "team"的以下两个值：
 
 | 名称 | Header 字段 |
 |------|-------------|

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Invite</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%232563eb' stroke='%231d4ed8' stroke-width='4'/><text x='50' y='68' font-size='50' font-weight='bold' fill='white' text-anchor='middle' font-family='Arial'>W</text></svg>">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+        :root {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #0f172a;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --border: #e5e7eb;
+            --text: #0f172a;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger: #dc2626;
+            --success: #16a34a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); min-height: 100vh; }
+        .navbar {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .navbar-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .navbar-link:hover { color: var(--primary); }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .page {
+            width: min(420px, 94%);
+            margin: 1.5rem auto;
+            padding-bottom: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            color: var(--primary);
+        }
+        
+        /* 车位状态 */
+        .team-accounts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .team-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .team-row:hover:not(.full) {
+            border-color: var(--primary);
+        }
+        .team-row.selected {
+            border-color: var(--primary);
+            background: #f0f7ff;
+        }
+        .team-row.full {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .team-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .team-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .team-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .team-stat.available { color: var(--success); font-weight: 600; }
+        .team-stat.full { color: var(--danger); }
+        
+        /* 邀请码表单 */
+        .invite-card h1 {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        .invite-card .subtitle {
+            color: var(--muted);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: #fff;
+            color: var(--text);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .turnstile-wrapper {
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+        .turnstile-wrapper iframe {
+            width: 100% !important;
+        }
+        .btn {
+            border-radius: 8px;
+            padding: 0.7rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s;
+            width: 100%;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+        .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+        .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+        .message {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .message.success { background: #f0fdf4; color: var(--success); border: 1px solid #dcfce7; }
+        .message.error { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+        .success-box {
+            background: #f0fdf4;
+            border: 1px solid #dcfce7;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .success-box h2 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--success); }
+        .success-box .email { font-size: 1.1rem; font-weight: 600; }
+        .muted { color: var(--muted); font-size: 0.85rem; }
+        .hidden { display: none !important; }
+        
+        /* 加载动画 */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+        .loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+        .logo-container { width: 60px; height: 60px; }
+        .tech-stroke {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 2;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 2px var(--primary));
+        }
+        .ring-group { transform-origin: 50px 50px; animation: spin 2s linear infinite; }
+        .draw-path { stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 0.8s ease-out forwards; }
+        .center-circle { animation: pop 0.3s ease forwards 0.5s; opacity: 0; transform-origin: 50px 50px; fill: var(--bg); }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pop { to { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <!-- 加载动画 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="logo-container">
+            <svg viewBox="0 0 100 100">
+                <defs><path id="petal" d="M40,22 L60,22 L62,24 L60,26 L40,26 L38,24 Z" /></defs>
+                <g class="ring-group">
+                    <use href="#petal" class="tech-stroke draw-path" transform="rotate(0, 50, 50)" />
+                    <use href="#petal" class="tech-stroke draw-path" transform="rotate(60, 50, 50)" style="animation-delay:.1s" />
+                    <use href="#petal" class="tech-stroke draw-path" transform="rotate(120, 50, 50)" style="animation-delay:.2s" />
+                    <use href="#petal" class="tech-stroke draw-path" transform="rotate(180, 50, 50)" style="animation-delay:.3s" />
+                    <use href="#petal" class="tech-stroke draw-path" transform="rotate(240, 50, 50)" style="animation-delay:.4s" />
+                    <use href="#petal" class="tech-stroke draw-path" transform="rotate(300, 50, 50)" style="animation-delay:.5s" />
+                </g>
+                <circle class="center-circle tech-stroke" cx="50" cy="50" r="8" stroke-width="2" />
+            </svg>
+        </div>
+    </div>
+<nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-square-fill" viewBox="0 0 16 16">
+  <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm10.03 4.97a.75.75 0 0 1 .011 1.05l-3.992 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.75.75 0 0 1 1.08-.022z"/></svg>
+             Team Invite</a>
+        <div class="navbar-right">
+            
+        </div>
+    </nav>
+
+    <main class="page">
+        <!-- 车位状态 -->
+        <section id="teamSection" class="card">
+            <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; margin-right: 4px;"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg> 车位状态</h2>
+            <div id="teamAccountsContainer" class="team-accounts-list">
+                <p class="muted" style="text-align:center;padding:1rem;">加载中...</p>
+            </div>
+        </section>
+
+        <!-- 邀请码表单 -->
+        <section id="inviteSection" class="card invite-card">
+            <h1>填写邀请信息</h1>
+            <p class="subtitle">输入邀请码和邮箱完成领取</p>
+            
+            <div id="formSection">
+                <form id="inviteForm">
+                    <div class="form-group">
+                        <label for="code">邀请码</label>
+                        <input type="text" id="code" placeholder="请输入邀请码" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">邮箱地址</label>
+                        <input type="email" id="email" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>选择车位</label>
+                        <select id="teamSelect" required>
+                            <option value="">请选择车位</option>
+                        </select>
+                        <p id="lockedHint" class="muted hidden" style="margin-top:0.3rem;">该邀请码已绑定车位</p>
+                    </div>
+                    <div id="turnstileContainer" class="turnstile-wrapper"></div>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">发送邀请</button>
+                </form>
+                <div id="message" class="message hidden"></div>
+            </div>
+
+            <div id="successSection" class="hidden">
+                <div class="success-box">
+                    <h2>✅ 发送成功</h2>
+                    <p>邀请已发送到</p>
+                    <p class="email" id="successEmail"></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let teamAccounts = [], selectedAccountId = null, lockedTeamAccountId = null, checkTimer = null;
+        let turnstileSiteKey = null, turnstileWidgetId = null;
+
+        async function init() {
+            // 取 Turnstile site key（如果未配置会返回空字符串）
+            try {
+                const r = await fetch('/api/turnstile/site-key');
+                const j = await r.json();
+                turnstileSiteKey = j.siteKey || null;
+            } catch {}
+
+            await loadTeamAccounts();
+
+            // 渲染 Turnstile（如有配置）
+            if (turnstileSiteKey && window.turnstile) {
+                try {
+                    turnstileWidgetId = window.turnstile.render(
+                        document.getElementById('turnstileContainer'),
+                        { sitekey: turnstileSiteKey, theme: 'light', size: 'flexible' }
+                    );
+                } catch {}
+            }
+        }
+
+        async function loadTeamAccounts() {
+            try {
+                const res = await fetch('/api/team-accounts/status');
+                const data = await res.json();
+                teamAccounts = data.accounts || [];
+                renderTeamAccounts();
+                updateTeamSelect();
+            } catch {
+                document.getElementById('teamAccountsContainer').innerHTML =
+                    '<p class="muted" style="text-align:center">加载失败</p>';
+            }
+        }
+
+        function renderTeamAccounts() {
+            const c = document.getElementById('teamAccountsContainer');
+            if (!teamAccounts.length) {
+                c.innerHTML = '<p class="muted" style="text-align:center">暂无可用车位</p>';
+                return;
+            }
+            c.innerHTML = teamAccounts.map(a => {
+                const avail = (a.seatsEntitled || 0) - (a.seatsInUse || 0) - (a.pendingInvites || 0);
+                const full = (a.seatsInUse || 0) + (a.pendingInvites || 0) >= (a.maxSeats || 5);
+                const sel = selectedAccountId === a.id;
+                const exp = a.activeUntil ? new Date(a.activeUntil).toLocaleDateString() : '';
+                return `<div class="team-row ${sel ? 'selected' : ''} ${full ? 'full' : ''}" onclick="selectAccount(${a.id}, ${full})">
+                    <span class="team-name">${a.name}</span>
+                    <div class="team-info">
+                        <span class="team-stat">${a.seatsInUse}/${a.seatsEntitled} 已用</span>
+                        ${a.pendingInvites ? `<span class="team-stat">${a.pendingInvites} 待处理</span>` : ''}
+                        <span class="team-stat ${full ? 'full' : 'available'}">${avail} 剩余</span>
+                        ${exp ? `<span class="team-stat">到期 ${exp}</span>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function selectAccount(id, full) {
+            if (full || lockedTeamAccountId) return;
+            selectedAccountId = id;
+            renderTeamAccounts();
+            document.getElementById('teamSelect').value = id;
+        }
+
+        function updateTeamSelect() {
+            const s = document.getElementById('teamSelect');
+            s.innerHTML = '<option value="">请选择车位</option>' + teamAccounts.map(a => {
+                const full = (a.seatsInUse || 0) + (a.pendingInvites || 0) >= (a.maxSeats || 5);
+                return `<option value="${a.id}" ${full ? 'disabled' : ''}>${a.name} (${(a.seatsInUse || 0) + (a.pendingInvites || 0)}/${a.seatsEntitled})${full ? ' (不可选)' : ''}</option>`;
+            }).join('');
+
+            if (selectedAccountId) s.value = selectedAccountId;
+            else {
+                const av = teamAccounts.find(a => (a.seatsInUse || 0) + (a.pendingInvites || 0) < (a.maxSeats || 5));
+                if (av) { selectedAccountId = av.id; s.value = av.id; }
+            }
+        }
+
+        async function checkInviteCode(code) {
+            if (!code) {
+                lockedTeamAccountId = null;
+                document.getElementById('lockedHint').classList.add('hidden');
+                document.getElementById('teamSelect').disabled = false;
+                return;
+            }
+            try {
+                const res = await fetch('/api/invite/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+                const d = await res.json();
+                if (res.ok && d.teamAccountId) {
+                    lockedTeamAccountId = selectedAccountId = d.teamAccountId;
+                    document.getElementById('teamSelect').value = d.teamAccountId;
+                    document.getElementById('teamSelect').disabled = true;
+                    document.getElementById('lockedHint').classList.remove('hidden');
+                    renderTeamAccounts();
+                } else {
+                    lockedTeamAccountId = null;
+                    document.getElementById('teamSelect').disabled = false;
+                    document.getElementById('lockedHint').classList.add('hidden');
+                }
+            } catch {}
+        }
+
+        const form = document.getElementById('inviteForm');
+        const codeInput = document.getElementById('code');
+        const message = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
+
+        codeInput.oninput = () => {
+            clearTimeout(checkTimer);
+            checkTimer = setTimeout(() => checkInviteCode(codeInput.value.trim()), 300);
+        };
+        document.getElementById('teamSelect').onchange = e => {
+            if (!lockedTeamAccountId) {
+                selectedAccountId = +e.target.value || null;
+                renderTeamAccounts();
+            }
+        };
+
+        function showMessage(t, err) {
+            message.textContent = t;
+            message.className = 'message ' + (err ? 'error' : 'success');
+            message.classList.remove('hidden');
+        }
+
+        form.onsubmit = async e => {
+            e.preventDefault();
+            const code = codeInput.value.trim();
+            const email = document.getElementById('email').value.trim();
+            const teamAccountId = lockedTeamAccountId || selectedAccountId;
+
+            if (!teamAccountId) { showMessage('请选择车位', 1); return; }
+
+            let tt = '';
+            if (turnstileSiteKey && window.turnstile && turnstileWidgetId !== null) {
+                tt = window.turnstile.getResponse(turnstileWidgetId);
+                if (!tt) { showMessage('请完成人机验证', 1); return; }
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '发送中...';
+            message.classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/invite/use', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, email, teamAccountId, turnstileToken: tt })
+                });
+                const d = await res.json();
+                if (res.ok) {
+                    document.getElementById('formSection').classList.add('hidden');
+                    document.getElementById('successSection').classList.remove('hidden');
+                    document.getElementById('successEmail').textContent = email;
+                    await loadTeamAccounts();
+                } else {
+                    showMessage(d.error || '提交失败', 1);
+                    window.turnstile?.reset?.(turnstileWidgetId);
+                }
+            } catch {
+                showMessage('网络错误', 1);
+                window.turnstile?.reset?.(turnstileWidgetId);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '发送邀请';
+            }
+        };
+
+        function hideLoading() {
+            const o = document.getElementById('loadingOverlay');
+            o.classList.add('fade-out');
+            setTimeout(() => o.remove(), 300);
+        }
+
+        init().then(hideLoading).catch(hideLoading);
+        setInterval(loadTeamAccounts, 60000);
+    </script>
+</body>
+</html>

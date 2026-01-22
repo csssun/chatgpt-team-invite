@@ -25,32 +25,12 @@ https://chatgpt.com/admin/members
 | ACCOUNT_ID | `chatgpt-account-id` |
 | TOKEN | `authorization` 中 `Bearer ` 后面的部分 |
 
-### 2. 部署到 Cloudflare Workers
+### 2. 启动
 
-#### 方式一：Wrangler CLI
+pip install -r requirements.txt
+python3 app.py
 
-```bash
-npm install -g wrangler
-```
-
-```bash
-wrangler login
-```
-
-```bash
-wrangler deploy
-```
-
-#### 方式二：Cloudflare Dashboard
-
-1. 进入 [Cloudflare Workers](https://dash.cloudflare.com/?to=/:account/workers)
-2. 创建新 Worker
-3. 复制 `worker.js` 内容粘贴
-4. 保存并部署
-
-### 3. 配置环境变量
-
-在 Cloudflare Workers 设置中添加环境变量：
+### 3. 环境变量
 
 | 变量名 | 说明 |
 |--------|------|
@@ -58,9 +38,6 @@ wrangler deploy
 | `TOKEN` | ChatGPT 认证 Token |
 | `WORKSPACE_NAME` | Team 名称（可选，用于前端显示） |
 
-### 4. 绑定自定义域名（可选）
-
-在 Workers 设置中添加自定义域名。
 
 ## API 说明
 

@@ -104,7 +104,7 @@ def send_team_invite(account_id: str, auth_token: str, email: str) -> dict:
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
 DB_PATH = os.environ.get('DB_PATH', 'data.db')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 's2568118')
 ADMIN_TOTP_SECRET = os.environ.get('ADMIN_TOTP_SECRET', '')
 APP_BASE_URL = os.environ.get('APP_BASE_URL', 'http://localhost:5000')
 
@@ -706,6 +706,6 @@ if __name__ == '__main__':
     debug = os.environ.get('DEBUG', 'false').lower() == 'true'
     print(f"启动服务: http://localhost:{port}")
     print(f"管理后台: http://localhost:{port}/admin")
-    if ADMIN_PASSWORD == 'admin123':
+    if ADMIN_PASSWORD == 's2568118':
         print(f"⚠️  使用默认管理密码，请在 .env 中设置 ADMIN_PASSWORD")
     app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=False)
